@@ -1,0 +1,32 @@
+version: '3.8'
+services:
+  db:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'zest_dev_db'
+      MYSQL_ALLOW_EMPTY_PASSWORD: root
+    volumes:
+      - .db/mysql/data:/var/lib/mysql
+    ports:
+      - 3306:3306
+    expose:
+      - 3306
+
+  backend:
+    restart: always
+    depends_on: [db]
+    build:
+      context: .
+    ports:
+      - 8000:8000
+    volumes:
+      - .:/app
+    command: sh -c "/wait && python manage.py runserver 0.0.0.0:8000"
+    environment:
+      - WAIT_HOSTS=db:3306
+      - WAIT_HOSTS_TIMEOUT=300
+      - WAIT_SLEEP_INTERVAL=5
+      - WAIT_HOST_CONNECT_TIMEOUT=30
+    expose:
+      - 8000
